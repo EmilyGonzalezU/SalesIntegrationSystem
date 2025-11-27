@@ -1,0 +1,20 @@
+# ----------------------------------------------------------------------
+# Configuraciones del Proyecto y Entorno (¡CRÍTICO!)
+# ----------------------------------------------------------------------
+
+# 1. Secretos y Variables de Entorno (IMPRESCINDIBLE)
+.env
+
+# 2. Entorno Virtual de Python
+venv/
+
+# 3. Archivos generados de Python
+__pycache__/
+*.pyc
+
+# 4. Archivos de Docker (Volúmenes de datos)
+# Esto asegura que los datos pesados y la configuración interna de Postgres y PgAdmin
+# no se suban, ya que se regeneran con docker-compose.
+postgres_data/
+pgadmin_data/
+
