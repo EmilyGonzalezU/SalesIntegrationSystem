@@ -19,6 +19,23 @@ def create_category_route(category: schemas.CategoryCreate, db: Session = Depend
 def read_categories_route(db: Session = Depends(get_db)):
     return crud.get_categories(db=db)
 
+@router.put("/categories/{category_id}", response_model=schemas.CategoryRead)
+def update_category_endpoint(
+    category_id: int,
+    category_update: schemas.CategoryCreate, # Asegúrate de que este schema sea el correcto
+    db: Session = Depends(get_db)
+):
+    # 1. Obtener la categoría existente por ID
+    db_category = crud.get_category(db, category_id=category_id)
+    
+    # 2. Manejar el caso de no encontrado (404)
+    if not db_category:
+        raise HTTPException(status_code=404, detail="Category not found")
+        
+    # 3. Llamar a la función CRUD, pasando el OBJETO de la DB y los nuevos datos
+    updated_category = crud.update_category(db=db, db_category=db_category, category_update=category_update)
+    
+    return updated_category
 # --- RUTAS DE PRODUCTO (CRUD COMPLETO) ---
 
 @router.post("/products/", response_model=schemas.ProductRead)

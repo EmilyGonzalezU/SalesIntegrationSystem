@@ -21,3 +21,4 @@ pgadmin_data/
 /frontend/node_modules/
 
 /frontend/dist/
+node_modules

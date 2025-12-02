@@ -9,6 +9,7 @@ from datetime import datetime
 # Esquemas de Categorías
 class CategoryCreate(BaseModel):
     name: str
+    is_weighted: bool = False
 
 class CategoryRead(CategoryCreate):
     id: int

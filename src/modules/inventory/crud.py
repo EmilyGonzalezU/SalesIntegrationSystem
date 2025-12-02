@@ -1,62 +1,59 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload 
+from . import models, schemas
 from typing import List
-from . import crud, schemas
-from database.connection import get_db
 
-router = APIRouter(
-    prefix="/inventory",
-    tags=["Inventory Management"]
-)
+# --- Lógica CRUD para Categorías ---
 
-# RUTAS DE CATEGORÍA
-@router.post("/categories/", response_model=schemas.CategoryRead)
-def create_category_route(category: schemas.CategoryCreate, db: Session = Depends(get_db)):
-    return crud.create_category(db=db, category=category)
+def create_category(db: Session, category: schemas.CategoryCreate) -> models.Category:
+    """[ADMIN] Crea una nueva categoría."""
+    db_category = models.Category(name=category.name, is_weighted=category.is_weighted)
+    db.add(db_category)
+    db.commit()
+    db.refresh(db_category)
+    return db_category
 
-@router.get("/categories/", response_model=List[schemas.CategoryRead])
-def read_categories_route(db: Session = Depends(get_db)):
-    return crud.get_categories(db=db)
+def get_categories(db: Session) -> List[models.Category]:
+    """Obtiene todas las categorías."""
+    return db.query(models.Category).all()
 
-# RUTAS DE PRODUCTO (Cajero y Admin)
-@router.post("/products/", response_model=schemas.ProductRead)
-def create_product_route(product: schemas.ProductCreate, db: Session = Depends(get_db)):
-    return crud.create_product(db=db, product=product)
+def get_category(db: Session
+, category_id: int) -> models.Category | None:
+    """Obtiene una categoría por ID."""
+    # Necesaria para las rutas PUT y DELETE
+    return db.query(models.Category).filter(models.Category.id == category_id).first()
 
-@router.get("/products/", response_model=List[schemas.ProductRead])
-def read_products_route(query: str = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """
-    Lista productos (cajero) o ejecuta la búsqueda rápida.
-    """
-    if query:
-        return crud.search_products(db=db, query=query)
-    
-    products = crud.get_products(db=db, skip=skip, limit=limit)
-    return products
+def update_category(db: Session, db_category: models.Category, category_update: schemas.CategoryCreate) -> models.Category:
+    """[ADMIN] Actualiza una categoría existente."""
+    db_category.name = category_update.name
+    db.commit()
+    db.refresh(db_category)
+    return db_category
 
-# CRUD COMPLETO PARA ADMIN:
-@router.put("/products/{product_id}", response_model=schemas.ProductRead)
-def update_product_route(product_id: int, product_update: schemas.ProductCreate, db: Session = Depends(get_db)):
-    """[ADMIN] Modifica los detalles de un producto existente."""
-    db_product = crud.get_product(db, product_id=product_id)
-    if not db_product:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
-    
-    # Actualiza los campos con los datos recibidos
-    for key, value in product_update.model_dump(exclude_unset=True).items():
-        setattr(db_product, key, value)
-    
+def delete_category(db: Session, db_category: models.Category):
+    """[ADMIN] Elimina una categoría."""
+    db.delete(db_category)
+    db.commit()
+
+
+# --- CRUD Productos y Búsqueda ---
+def create_product(db: Session, product: schemas.ProductCreate) -> models.Product:
+    """[ADMIN] Crea un nuevo producto."""
+    db_product = models.Product(**product.model_dump())
+    db.add(db_product)
     db.commit()
     db.refresh(db_product)
     return db_product
 
-@router.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_product_route(product_id: int, db: Session = Depends(get_db)):
-    """[ADMIN] Elimina un producto por su ID."""
-    db_product = crud.get_product(db, product_id=product_id)
-    if not db_product:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
-    
-    db.delete(db_product)
-    db.commit()
-    return
+def get_product(db: Session, product_id: int) -> models.Product | None:
+    """Obtiene un producto por ID."""
+    return db.query(models.Product).options(joinedload(models.Product.category)).filter(models.Product.id == product_id).first()
+
+def get_products(db: Session, skip: int = 0, limit: int = 100) -> List[models.Product]:
+    """Obtiene una lista de productos para el listado del Admin o POS."""
+    return db.query(models.Product).options(joinedload(models.Product.category)).offset(skip).limit(limit).all()
+
+def search_products(db: Session, query: str) -> List[models.Product]:
+    """Busca productos cuyo nombre contenga la consulta (insensible a mayúsculas/minúsculas)."""
+    return db.query(models.Product).options(joinedload(models.Product.category)).filter(
+        models.Product.name.ilike(f"%{query}%")
+    ).all()
