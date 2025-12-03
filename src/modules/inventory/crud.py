@@ -25,6 +25,7 @@ def get_category(db: Session
 def update_category(db: Session, db_category: models.Category, category_update: schemas.CategoryCreate) -> models.Category:
     """[ADMIN] Actualiza una categoría existente."""
     db_category.name = category_update.name
+    db_category.is_weighted = category_update.is_weighted
     db.commit()
     db.refresh(db_category)
     return db_category
@@ -44,9 +45,22 @@ def create_product(db: Session, product: schemas.ProductCreate) -> models.Produc
     db.refresh(db_product)
     return db_product
 
-def get_product(db: Session, product_id: int) -> models.Product | None:
+def get_product(db: Session, id: int) -> models.Product | None: # <-- Usamos 'id' aquí
     """Obtiene un producto por ID."""
-    return db.query(models.Product).options(joinedload(models.Product.category)).filter(models.Product.id == product_id).first()
+    return db.query(models.Product).options(joinedload(models.Product.category)).filter(models.Product.id == id).first()
+
+def update_product(db: Session, db_product: models.Product, product_update: schemas.ProductCreate) -> models.Product:
+    """[ADMIN] Actualiza los campos de un producto existente."""
+    
+    update_data = product_update.model_dump(exclude_unset=True)
+    
+    for key, value in update_data.items():
+        if key != "id": 
+            setattr(db_product, key, value)
+    
+    db.commit()
+    db.refresh(db_product)
+    return db_product
 
 def get_products(db: Session, skip: int = 0, limit: int = 100) -> List[models.Product]:
     """Obtiene una lista de productos para el listado del Admin o POS."""
@@ -57,3 +71,52 @@ def search_products(db: Session, query: str) -> List[models.Product]:
     return db.query(models.Product).options(joinedload(models.Product.category)).filter(
         models.Product.name.ilike(f"%{query}%")
     ).all()
+
+def get_cashier(db: Session, cashier_id: int) -> models.Cashier | None:
+    """Obtiene un cajero por ID."""
+    return db.query(models.Cashier).filter(models.Cashier.id == cashier_id).first()
+
+def get_cashier_by_rut(db: Session, rut: str) -> models.Cashier | None:
+    """Obtiene un cajero por RUT para el login."""
+    return db.query(models.Cashier).filter(models.Cashier.rut == rut).first()
+
+def get_all_cashiers(db: Session) -> List[models.Cashier]:
+    """Obtiene todos los cajeros para la vista administrativa."""
+    return db.query(models.Cashier).all()
+
+def create_cashier(db: Session, cashier: schemas.CashierCreate) -> models.Cashier:
+    """[ADMIN] Crea un nuevo perfil de cajero."""
+    
+    # Simplicidad: Ahora usamos el valor de is_active que viene en el esquema
+    db_cashier = models.Cashier(
+        name=cashier.name,
+        rut=cashier.rut,
+        is_active=cashier.is_active # ✨ USAR EL VALOR ENVIADO POR EL FORMULARIO
+    )
+    db.add(db_cashier)
+    db.commit()
+    db.refresh(db_cashier)
+    return db_cashier
+
+
+def update_cashier(db: Session, db_cashier: models.Cashier, cashier_update: schemas.CashierUpdate) -> models.Cashier:
+    """[ADMIN] Actualiza los campos de un cajero existente."""
+    
+    # Itera sobre los campos actualizados y asigna los nuevos valores
+    update_data = cashier_update.model_dump(exclude_unset=True)
+    
+    for key, value in update_data.items():
+        # Excluimos el RUT de la actualización ya que debe ser inmutable
+        if key != "rut": 
+            setattr(db_cashier, key, value)
+    
+    db.commit()
+    db.refresh(db_cashier)
+    return db_cashier
+
+def delete_cashier(db: Session, cashier_id: int):
+    """[ADMIN] Elimina un cajero por ID."""
+    db_cashier = get_cashier(db, cashier_id)
+    if db_cashier:
+        db.delete(db_cashier)
+        db.commit()

@@ -3,6 +3,10 @@ import { Typography, Card, Button, Divider } from 'antd'; // Añadido Divider de
 import ProductForm from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/components/admin/ProductForm.tsx'; // Asumo que este es el formulario de producto
 import CategoryForm from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/components/admin/categoryForm';   // Asumo que este es el formulario de categoría
 import CategoryEditForm from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/components/admin/categoryEdit';
+import ProductEditForm from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/components/admin/productEdit';
+import CashierForm from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/components/admin/CashierForm';
+import CashierEditForm from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/components/admin/cashierEdit';
+
 const { Title } = Typography;
 
 const InventoryManagement: React.FC = () => {
@@ -10,6 +14,9 @@ const InventoryManagement: React.FC = () => {
     const [showProductForm, setShowProductForm] = useState(true);
     const [showCategoryForm, setShowCategoryForm] = useState(true);
     const [showCategoryEditForm, setShowCategoryEditForm] = useState(true);
+    const [showProductEditForm, setShowProductEditForm] = useState(true);
+    const [showCashierForm, setShowCashierForm] = useState(true);
+    const [showCashierEditForm, setShowCashierEditForm] = useState(true);
 
     // Funciones de callback
     const handleProductSuccess = () => {
@@ -29,6 +36,25 @@ const InventoryManagement: React.FC = () => {
         // Aquí iría la lógica para recargar la lista de categorías
         alert('Categoría modificada (simulada).');
     };
+
+    const handleProductEditSuccess = () => {
+        setShowProductEditForm(false);
+        // Aquí iría la lógica para recargar la lista de categorías
+        alert('Categoría modificada (simulada).');
+    };
+
+    const handleCashierSuccess = () => {
+        setShowCashierForm(false);
+        // Aquí iría la lógica para recargar la lista de categorías
+        alert('Cajero creado');
+    };
+
+    const handleCashierEditSuccess = () => {
+        setShowCashierEditForm(false);
+        // Aquí iría la lógica para recargar la lista de categorías
+        alert('Cajero creado');
+    };
+
 
     return (
         <div style={{ padding: '20px', maxWidth: 1000, margin: '0 auto' }}>
@@ -87,6 +113,50 @@ const InventoryManagement: React.FC = () => {
                     />
                 </Card>
             )}
+
+
+           <Divider >Edición de Productos</Divider>
+
+            <Button 
+                onClick={() => setShowProductEditForm(true)} 
+                type="primary" 
+                style={{ marginBottom: 20 }} 
+                disabled={showProductEditForm}
+            >
+                Mostrar Formulario Edición
+            </Button>
+
+            {/* --- 3. FORMULARIO DEDICADO A EDICIÓN --- */}
+            {showProductEditForm && (
+                <Card title="3. Formulario Edición Productos" style={{ width: 450 }}>
+                    <ProductEditForm // <-- ¡COMPONENTE CORRECTO!
+                        onSuccess={handleProductEditSuccess}
+                        onCancel={() => setShowProductEditForm(false)}
+                    />
+                </Card>
+            )}
+
+             <Divider >Creacion cajeros</Divider>
+
+            <Button 
+                onClick={() => setShowProductEditForm(true)} 
+                type="primary" 
+                style={{ marginBottom: 20 }} 
+                disabled={showProductEditForm}
+            >
+                Mostrar Formulario Edición
+            </Button>
+
+            {/* --- 3. FORMULARIO DEDICADO A EDICIÓN --- */}
+            {showCashierForm && (
+                <Card title="3. Formulario Edición Productos" style={{ width: 450 }}>
+                    <CashierForm // <-- ¡COMPONENTE CORRECTO!
+                        onSuccess={handleCashierSuccess}
+                        onCancel={() => setShowCashierForm(false)}
+                    />
+                </Card>
+            )}
+
         </div>
     );
 };

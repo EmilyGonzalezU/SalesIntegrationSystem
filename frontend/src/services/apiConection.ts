@@ -1,10 +1,15 @@
 import axios from 'axios';
-import type { Product, Category, CashierRead, CashierLogin, SaleCreate, SaleRead, AdminLogin, AdminRead, CategoryCreate} from '../types/inventory';
-import type { CategoryUpdate } from '../types/inventory';
+import type { 
+    Product, Category, CashierRead, CashierLogin, SaleCreate, SaleRead, AdminLogin, AdminRead, 
+    CategoryCreate, CategoryUpdate,
+    // ✨ TIPOS DE CAJERO NECESARIOS:
+    CashierCreate, // Para POST
+    CashierUpdate  // Para PUT
+} from '../types/inventory';
 // URL del Backend donde corre Uvicorn (Asegúrate de que esta ruta sea la correcta)
 const API_URL = 'http://127.0.0.1:8000'; 
+const API_CATEGORY_ROUTE = `${API_URL}/inventory/categories`;
 
-// ------------------- INVENTARIO Y CATEGORÍAS (CRUD COMPLETO) -------------------
 
 export const getProducts = async (query?: string): Promise<Product[]> => {
   const url = query ? `${API_URL}/inventory/products/?query=${query}` : `${API_URL}/inventory/products/`;
@@ -43,7 +48,6 @@ export const createCategory = async (categoryData: CategoryCreate): Promise<Cate
     return response.data;
 };
 
-const API_CATEGORY_ROUTE = `${API_URL}/inventory/categories`;
 
 // **NUEVO:** Actualizar Categoría (Usamos PUT, que implementamos en FastAPI)
 export const updateCategory = async (categoryId: number, categoryData: CategoryUpdate): Promise<Category> => {
@@ -58,7 +62,37 @@ export const deleteCategory = async (categoryId: number): Promise<void> => {
 };
 
 
+
+// ------------------- CRUD CAJEROS (ADMIN) -------------------
+// Asumimos que estas rutas están bajo el prefijo /admin/cashiers/
+const API_CASHIER_ROUTE = `${API_URL}/admin/cashiers`;
+
+export const getCashiers = async (): Promise<CashierRead[]> => {
+    /** [ADMIN] Obtiene la lista completa de cajeros. */
+    const response = await axios.get<CashierRead[]>(API_CASHIER_ROUTE);
+    return response.data;
+};
+
+export const createCashier = async (cashierData: CashierCreate): Promise<CashierRead> => {
+    /** [ADMIN] Crea un nuevo perfil de cajero. */
+    const response = await axios.post<CashierRead>(API_CASHIER_ROUTE, cashierData);
+    return response.data;
+};
+
+export const updateCashier = async (cashierId: number, cashierData: CashierUpdate): Promise<CashierRead> => {
+    /** [ADMIN] Actualiza nombre o estado del cajero. */
+    const response = await axios.put<CashierRead>(`${API_CASHIER_ROUTE}/${cashierId}`, cashierData);
+    return response.data;
+};
+
+export const deleteCashier = async (cashierId: number): Promise<void> => {
+    /** [ADMIN] Elimina un cajero. */
+    await axios.delete(`${API_CASHIER_ROUTE}/${cashierId}`);
+};
+
+
 // ------------------- AUTENTICACIÓN (RUT y Admin) -------------------
+// ... (validateCashier, adminLogin, sin cambios) ...
 
 export const validateCashier = async (rut: string): Promise<CashierRead> => {
     const payload: CashierLogin = { rut };
@@ -72,6 +106,7 @@ export const adminLogin = async (credentials: AdminLogin): Promise<AdminRead> =>
 };
 
 // ------------------- VENTAS Y REPORTES -------------------
+// ... (createSale, getDailySalesReport, sin cambios) ...
 
 export const createSale = async (saleData: SaleCreate): Promise<SaleRead> => {
     const response = await axios.post<SaleRead>(`${API_URL}/sales/`, saleData);
@@ -79,7 +114,6 @@ export const createSale = async (saleData: SaleCreate): Promise<SaleRead> => {
 };
 
 export const getDailySalesReport = async (targetDate: string): Promise<any> => {
-    // Ruta de reportes administrativos
     const response = await axios.get(`${API_URL}/admin/reports/daily_sales?target_date=${targetDate}`);
     return response.data;
 };

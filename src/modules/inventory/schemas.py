@@ -37,25 +37,32 @@ class ProductRead(ProductCreate):
 # GESTIÓN DE CAJEROS
 # ====================================================================
 
-# Esquema Base de Cajero
 class CashierBase(BaseModel):
     name: str
     rut: str 
+    is_active: bool = True # ✨ AÑADIR DEFAULT AQUÍ
 
 # Esquema para crear un cajero (Admin)
 class CashierCreate(CashierBase):
-    pass
+    # Ya no necesita pass, simplemente hereda los campos incluyendo is_active
+    pass 
 
 # Esquema para leer un cajero (Respuesta de API)
 class CashierRead(CashierBase):
     id: int
-    is_active: bool
+    # is_active ya no se define aquí, se hereda de CashierBase
     model_config = ConfigDict(from_attributes=True)
 
-# Esquema de Validación para el inicio de Caja
+# Esquema de Validación para el inicio de Caja (sin cambios)
 class CashierLogin(BaseModel):
     rut: str = Field(..., description="RUT o identificación del cajero para iniciar sesión.")
 
+# Esquema de Actualización (solo se puede cambiar el nombre y el estado)
+class CashierUpdate(BaseModel):
+    name: str
+    is_active: bool
+
+# ...
 # ====================================================================
 # GESTIÓN DE ADMINISTRADORES (SEGURIDAD REFORZADA)
 # ====================================================================

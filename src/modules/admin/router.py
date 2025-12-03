@@ -70,3 +70,35 @@ def get_low_stock_route(db: Session = Depends(get_db)):
     [ADMIN] Alerta de Reabastecimiento: Obtiene productos con stock bajo o igual al stock mínimo.
     """
     return reports_utils.get_low_stock_products(db)
+
+
+# ------------------- RUTAS DE GESTIÓN ADMINISTRATIVA (CRUD Cajeros) -------------------
+# Estas rutas deberían estar protegidas por JWT de Administrador
+
+@router.post("/admin/cashiers/", response_model=schemas.CashierRead, status_code=status.HTTP_201_CREATED)
+def create_cashier_route(cashier: schemas.CashierCreate, db: Session = Depends(get_db)):
+    """[ADMIN] Crea un nuevo perfil de cajero."""
+    db_cashier = user_crud.get_cashier_by_rut(db, rut=cashier.rut)
+    if db_cashier:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="RUT ya registrado.")
+    return user_crud.create_cashier(db=db, cashier=cashier)
+
+@router.get("/admin/cashiers/", response_model=List[schemas.CashierRead])
+def read_cashiers_route(db: Session = Depends(get_db)):
+    """[ADMIN] Obtiene la lista completa de cajeros."""
+    return user_crud.get_all_cashiers(db)
+
+@router.put("/admin/cashiers/{cashier_id}", response_model=schemas.CashierRead)
+def update_cashier_route(cashier_id: int, cashier_update: schemas.CashierUpdate, db: Session = Depends(get_db)):
+    """[ADMIN] Actualiza el nombre o el estado de un cajero."""
+    db_cashier = user_crud.get_cashier(db, cashier_id=cashier_id)
+    if not db_cashier:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cajero no encontrado.")
+    
+    return user_crud.update_cashier(db, db_cashier=db_cashier, cashier_update=cashier_update)
+
+@router.delete("/admin/cashiers/{cashier_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_cashier_route(cashier_id: int, db: Session = Depends(get_db)):
+    """[ADMIN] Elimina un cajero (físico)."""
+    user_crud.delete_cashier(db, cashier_id)
+    return

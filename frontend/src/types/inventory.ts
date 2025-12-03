@@ -31,6 +31,18 @@ export interface CashierLogin {
   rut: string;
 }
 
+// ✨ Lo que necesitan los formularios:
+export interface CashierCreate {
+  name: string;
+  rut: string;
+  is_active: boolean; // Se necesita para crear un cajero activo/inactivo
+}
+
+export interface CashierUpdate {
+  name: string;
+  is_active: boolean; // El RUT no se actualiza
+}
+
 // ------------------- ADMINISTRADORES -------------------
 
 export interface AdminRead {
@@ -63,6 +75,21 @@ export interface Product {
 }
 
 export interface ProductCreate {
+  id: number;
+  bar_code: string | null;
+  name: string;
+  category_id: number;
+  description: string | null;
+  brand: string;
+  stock: number;
+  min_stock: number;
+  price: number;
+  discount: number | null;
+  is_iva_exempt: boolean;
+  category?: Category;
+}
+
+export interface ProductUpdate {
   id: number;
   bar_code: string | null;
   name: string;

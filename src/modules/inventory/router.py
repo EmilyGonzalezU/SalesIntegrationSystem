@@ -53,21 +53,20 @@ def read_products_route(query: str = None, skip: int = 0, limit: int = 100, db: 
     
     products = crud.get_products(db=db, skip=skip, limit=limit)
     return products
-
+    
 @router.put("/products/{product_id}", response_model=schemas.ProductRead)
 def update_product_route(product_id: int, product_update: schemas.ProductCreate, db: Session = Depends(get_db)):
     """[ADMIN] Modifica los detalles de un producto existente."""
-    db_product = crud.get_product(db, product_id=product_id)
+    
+    # 1. Obtener el producto existente (Usamos product_id)
+    db_product = crud.get_product(db, id=product_id) 
     if not db_product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
     
-    # Itera sobre los campos actualizados y asigna los nuevos valores
-    for key, value in product_update.model_dump(exclude_unset=True).items():
-        setattr(db_product, key, value)
+    # 2. Llamar a la función CRUD para actualizar (Usamos la función CRUD que ya definimos)
+    updated_product = crud.update_product(db, db_product=db_product, product_update=product_update)
     
-    db.commit()
-    db.refresh(db_product)
-    return db_product
+    return updated_product
 
 @router.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_product_route(product_id: int, db: Session = Depends(get_db)):

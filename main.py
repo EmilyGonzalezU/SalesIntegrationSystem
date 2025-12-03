@@ -1,10 +1,11 @@
 from fastapi import FastAPI
-from database.connection import Base, engine
-from src.modules.inventory import router as inventory_router
-from src.modules.users import router as auth_router   # Renombrado de 'users_router' a 'auth_router'
-from src.modules.sales import router as sales_router    
-from src.modules.admin import router as admin_router    # <--- AÑADIDO: Router de Admin/Reportes
 from fastapi.middleware.cors import CORSMiddleware 
+# Importaciones necesarias
+from src.modules.inventory import router as inventory_router
+from src.modules.users import router as auth_router       # Router de Usuarios/Auth
+from src.modules.sales import router as sales_router    
+from src.modules.admin import router as admin_router    # Router de Admin/Reportes
+from database.connection import engine
 from src.modules.inventory import models # Asegura la carga de todos los modelos (Cashier, Admin, Sale, etc.)
 
 
@@ -14,10 +15,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configuración CORS para que React (http://localhost:5173) pueda conectarse al API
+# Configuración CORS
 origins = [
     "http://localhost:5173", 
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:8000", # Para Swagger/Docs
 ]
 
 app.add_middleware(
@@ -28,15 +30,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# CREA LAS TABLAS: Asegúrate que tu DB esté corriendo antes de ejecutar esto.
-# Llama a Base.metadata.create_all para crear TODAS las tablas definidas en models.py.
-Base.metadata.create_all(bind=engine)
+# ❌ REMOVER: Base.metadata.create_all(bind=engine)
+# Usar el script reset_db.py para crear/actualizar la BD.
 
 # --- INCLUSIÓN DE TODOS LOS ROUTERS ---
 app.include_router(inventory_router.router)
-app.include_router(auth_router.router)    # Maneja /auth/cashier_validate_rut/ y /auth/admin_login/
-app.include_router(sales_router.router)   # Maneja /sales/
-app.include_router(auth_router.router)   # Maneja /admin/reports/, /admin/cashiers/, /admin/tax_rate/
+app.include_router(auth_router.router)      # Rutas /auth/...
+app.include_router(sales_router.router)     # Rutas /sales/...
+app.include_router(admin_router.router)     # Rutas /admin/...
 
 @app.get("/")
 def read_root():
