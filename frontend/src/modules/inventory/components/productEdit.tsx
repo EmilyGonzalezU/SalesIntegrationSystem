@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Form, Input, InputNumber, Button, Select, Switch, message, Card, Row, Col, Spin } from 'antd';
-import type { Category, Product, ProductUpdate } from "../../types/inventory";
-import { getCategories, getProducts, updateProduct } from '../../services/apiConection'; 
+import type { Category, Product, ProductUpdate } from "./../types";
+import { getCategories, getProducts, updateProduct } from './../api'; 
 import { CheckOutlined, CloseOutlined, EditOutlined } from "@ant-design/icons";
 
 

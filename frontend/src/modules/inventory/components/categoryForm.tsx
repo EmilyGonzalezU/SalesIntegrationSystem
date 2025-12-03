@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import type { CategoryCreate } from "../../types/inventory";
+import type { CategoryCreate } from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/modules/inventory/types.ts';
 import { Form, Input, Button, message, Card, Switch } from "antd"; // Importamos Switch
-import { createCategory } from "../../services/apiConection"; 
+import { createCategory } from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/modules/inventory/api.ts';
 import { SaveOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons"; // Importamos íconos
 
 // El tipo de valores a enviar al formulario (name y is_weighted)

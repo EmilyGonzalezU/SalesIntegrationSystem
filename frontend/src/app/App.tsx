@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Typography, Card, Button, Divider } from 'antd'; // Añadido Divider de AntD
-import ProductForm from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/components/admin/ProductForm.tsx'; // Asumo que este es el formulario de producto
-import CategoryForm from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/components/admin/categoryForm';   // Asumo que este es el formulario de categoría
-import CategoryEditForm from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/components/admin/categoryEdit';
-import ProductEditForm from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/components/admin/productEdit';
-import CashierForm from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/components/admin/CashierForm';
-import CashierEditForm from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/components/admin/cashierEdit';
+import ProductForm from '.././modules/inventory/components/ProductForm'; // Asumo que este es el formulario de producto
+import CategoryForm from '.././modules/inventory/components//categoryForm';   // Asumo que este es el formulario de categoría
+import CategoryEditForm from '.././modules/inventory/components/categoryEdit';
+import ProductEditForm from '.././modules/inventory/components/productEdit';
+import CashierForm from '.././modules/admin/components/CashierForm';
+import CashierEditForm from '.././modules/admin/components/cashierEdit';
 
 const { Title } = Typography;
 
@@ -156,7 +156,26 @@ const InventoryManagement: React.FC = () => {
                     />
                 </Card>
             )}
+            <Divider >EDIT cajeros</Divider>
 
+            <Button 
+                onClick={() => setShowCashierEditForm(true)} 
+                type="primary" 
+                style={{ marginBottom: 20 }} 
+                disabled={showProductEditForm}
+            >
+                Mostrar Formulario Edición
+            </Button>
+
+            {/* --- 3. FORMULARIO DEDICADO A EDICIÓN --- */}
+            {showCashierEditForm && (
+                <Card title="3. Formulario Edición Productos" style={{ width: 450 }}>
+                    <CashierEditForm // <-- ¡COMPONENTE CORRECTO!
+                        onSuccess={handleCashierEditSuccess}
+                        onCancel={() => setShowCashierEditForm(false)}
+                    />
+                </Card>
+            )}
         </div>
     );
 };

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Form, Input, Button, message, Card, Switch } from "antd";
 import { SaveOutlined, CheckOutlined, CloseOutlined, UserOutlined } from "@ant-design/icons";
-import type { CashierCreate } from "../../types/inventory";
-import { createCashier } from "../../services/apiConection";
+import type { CashierCreate } from "../types";
+import { createCashier } from "/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/modules/admin/api.ts";
 
 type CashierFormValues = CashierCreate; 
 

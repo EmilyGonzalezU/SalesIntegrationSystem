@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
-import type { Category, CategoryUpdate } from "../../types/inventory"; 
+import type { Category, CategoryUpdate } from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/modules/inventory/types.ts'; 
 import { Form, Input, Button, message, Card, Select, Spin, Switch } from "antd";
 // Importamos updateCategory y getCategories
-import { updateCategory, getCategories } from "../../services/apiConection"; 
+import { updateCategory, getCategories } from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/modules/inventory/api.ts'; 
 import { CheckOutlined, CloseOutlined, EditOutlined } from "@ant-design/icons";
 
 const { Option } = Select;

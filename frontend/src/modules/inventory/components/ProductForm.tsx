@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Form, Input, InputNumber, Button, Select, Switch, message, Card } from 'antd';
-import type { Category, ProductCreate } from "../../types/inventory";
-import { getCategories, createProductAdmin } from '../../services/apiConection'; 
+import type { Category, ProductCreate } from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/modules/inventory/types.ts';
+import { getCategories, createProductAdmin } from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/modules/inventory/api.ts'; 
 import { CheckOutlined, CloseOutlined, SaveOutlined } from '@ant-design/icons';
 import * as Antd from 'antd'; 
 
