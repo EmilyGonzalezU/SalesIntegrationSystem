@@ -1,6 +1,7 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
+import re
 
 # ====================================================================
 # GESTIÓN DE INVENTARIO
@@ -26,7 +27,7 @@ class ProductCreate(BaseModel):
     min_stock: float
     price: float
     discount: Optional[float] = None
-    is_iva_exempt: bool = False # Campo de IVA
+    is_iva_exempt: bool = False
 
 class ProductRead(ProductCreate):
     id: int
@@ -34,49 +35,100 @@ class ProductRead(ProductCreate):
     model_config = ConfigDict(from_attributes=True)
 
 # ====================================================================
-# GESTIÓN DE CAJEROS
+# GESTIÓN DE CAJEROS (CON VALIDACIONES)
 # ====================================================================
 
+# Esquema Base de Cajero
 class CashierBase(BaseModel):
     name: str
     rut: str 
-    is_active: bool = True # ✨ AÑADIR DEFAULT AQUÍ
+    is_active: bool = True 
 
-# Esquema para crear un cajero (Admin)
+    # --- VALIDACIONES DE SEGURIDAD Y FORMATO ---
+
+    @field_validator('name')
+    def name_must_be_text(cls, v):
+        # Permite letras (a-z), espacios y tildes/ñ
+        if not re.match(r'^[a-zA-Z\sñÑáéíóúÁÉÍÓÚ]+$', v):
+            raise ValueError('El nombre solo debe contener letras')
+        return v
+
+    @field_validator('rut')
+    def validate_rut_format(cls, v):
+        # 1. Limpiar el RUT (quitar puntos y espacios)
+        clean_rut = v.replace('.', '').replace(' ', '').strip().upper()
+        
+        # ✨ CORRECCIÓN: Si el RUT viene sin guion (de la BD o input), lo formateamos
+        if '-' not in clean_rut and len(clean_rut) > 1:
+            clean_rut = f"{clean_rut[:-1]}-{clean_rut[-1]}"
+        
+        # 2. Verificar formato básico (Números + Guion + Digito/K)
+        if not re.match(r'^[0-9]+-[0-9K]$', clean_rut):
+            raise ValueError('El RUT debe tener formato válido (ej: 12345678-9)')
+        
+        # 3. Validación Matemática (Módulo 11) - Verificar que el RUT sea real
+        try:
+            rut_body, dv = clean_rut.split('-')
+            rut_int = int(rut_body)
+        except ValueError:
+             raise ValueError('Formato de RUT inválido')
+
+        suma = 0
+        multiplo = 2
+        
+        # Recorrer dígitos de derecha a izquierda
+        for d in reversed(str(rut_int)):
+            suma += int(d) * multiplo
+            multiplo += 1
+            if multiplo > 7:
+                multiplo = 2
+        
+        expected_dv_int = 11 - (suma % 11)
+        
+        if expected_dv_int == 11:
+            expected_char = '0'
+        elif expected_dv_int == 10:
+            expected_char = 'K'
+        else:
+            expected_char = str(expected_dv_int)
+            
+        if dv != expected_char:
+            raise ValueError('El RUT no es válido (Dígito verificador incorrecto)')
+        
+        return clean_rut
+# Esquema para crear un cajero
 class CashierCreate(CashierBase):
-    # Ya no necesita pass, simplemente hereda los campos incluyendo is_active
-    pass 
+    pass
 
-# Esquema para leer un cajero (Respuesta de API)
+# Esquema para leer un cajero
 class CashierRead(CashierBase):
     id: int
-    # is_active ya no se define aquí, se hereda de CashierBase
+    # is_active se hereda
     model_config = ConfigDict(from_attributes=True)
 
-# Esquema de Validación para el inicio de Caja (sin cambios)
 class CashierLogin(BaseModel):
     rut: str = Field(..., description="RUT o identificación del cajero para iniciar sesión.")
 
-# Esquema de Actualización (solo se puede cambiar el nombre y el estado)
 class CashierUpdate(BaseModel):
     name: str
     is_active: bool
 
-# ...
 # ====================================================================
-# GESTIÓN DE ADMINISTRADORES (SEGURIDAD REFORZADA)
+# GESTIÓN DE ADMINISTRADORES
 # ====================================================================
 
-# Esquemas para la gestión de Admin
 class AdminBase(BaseModel):
     username: str
     name: str
+
 class AdminCreate(AdminBase):
-    password: str # Solo para creación
+    password: str 
+
 class AdminRead(AdminBase):
     id: int
     is_active: bool
     model_config = ConfigDict(from_attributes=True)
+
 class AdminLogin(BaseModel):
     username: str
     password: str 
@@ -85,7 +137,6 @@ class AdminLogin(BaseModel):
 # CONFIGURACIÓN DE IMPUESTOS
 # ====================================================================
 
-# Esquemas de Tasa de Impuesto (IVA Dinámico)
 class TaxRateBase(BaseModel):
     rate: float = Field(..., description="Tasa del impuesto en formato decimal (ej: 0.19).", ge=0.0)
 
@@ -102,7 +153,6 @@ class TaxRateRead(TaxRateBase):
 # VENTAS
 # ====================================================================
 
-# Esquemas de Detalle de Venta
 class SaleDetailBase(BaseModel):
     product_id: int
     quantity: float 
@@ -116,10 +166,8 @@ class SaleDetailRead(SaleDetailBase):
     subtotal: float
     iva_percentage_at_sale: float
     iva_amount: float
-    
     model_config = ConfigDict(from_attributes=True)
 
-# Esquemas de Venta
 class SaleCreate(BaseModel):
     details: List[SaleDetailCreate] 
     cashier_id: int 
@@ -132,5 +180,4 @@ class SaleRead(BaseModel):
     iva_total: float
     total_amount: float
     details: List[SaleDetailRead] 
-    
     model_config = ConfigDict(from_attributes=True)

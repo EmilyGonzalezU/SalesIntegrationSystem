@@ -1,9 +1,8 @@
 import axios from 'axios';
-import type {  CashierRead, CashierLogin, AdminLogin, AdminRead, CashierCreate, CashierUpdate  
+import type {  CashierRead, CashierLogin, AdminLogin, AdminRead, CashierCreate, CashierUpdate, TaxRateRead, TaxRateUpdate
 } from '/home/emily/Escritorio/SaleIntegrationSystem/frontend/src/modules/admin/types.ts';
 // URL del Backend donde c../typesorre Uvicorn (Asegúrate de que esta ruta sea la correcta)
 const API_URL = 'http://127.0.0.1:8000'; 
-const API_CATEGORY_ROUTE = `${API_URL}/inventory/categories`;
 
 // ------------------- CRUD CAJEROS (ADMIN) -------------------
 // Asumimos que estas rutas están bajo el prefijo /admin/cashiers/
@@ -44,5 +43,18 @@ export const validateCashier = async (rut: string): Promise<CashierRead> => {
 
 export const adminLogin = async (credentials: AdminLogin): Promise<AdminRead> => {
     const response = await axios.post<AdminRead>(`${API_URL}/auth/admin_login/`, credentials);
+    return response.data;
+};
+
+const API_TAX_ROUTE = `${API_URL}/admin/tax_rate/iva`;
+
+export const getTaxRate = async (): Promise<TaxRateRead> => {
+    const response = await axios.get<TaxRateRead>(API_TAX_ROUTE);
+    return response.data;
+};
+
+export const updateTaxRate = async (rate: number): Promise<TaxRateRead> => {
+    // Enviamos el objeto TaxRateUpdate { rate: 0.19 }
+    const response = await axios.put<TaxRateRead>(API_TAX_ROUTE, { rate });
     return response.data;
 };

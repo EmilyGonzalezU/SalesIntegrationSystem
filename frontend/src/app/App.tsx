@@ -6,7 +6,7 @@ import CategoryEditForm from '.././modules/inventory/components/categoryEdit';
 import ProductEditForm from '.././modules/inventory/components/productEdit';
 import CashierForm from '.././modules/admin/components/CashierForm';
 import CashierEditForm from '.././modules/admin/components/cashierEdit';
-
+import TaxForm from  '../modules/admin/components/TaxRate'
 const { Title } = Typography;
 
 const InventoryManagement: React.FC = () => {
@@ -17,7 +17,7 @@ const InventoryManagement: React.FC = () => {
     const [showProductEditForm, setShowProductEditForm] = useState(true);
     const [showCashierForm, setShowCashierForm] = useState(true);
     const [showCashierEditForm, setShowCashierEditForm] = useState(true);
-
+    const [showTaxForm, setShowTaxForm] = useState(true);
     // Funciones de callback
     const handleProductSuccess = () => {
         setShowProductForm(false);
@@ -54,6 +54,12 @@ const InventoryManagement: React.FC = () => {
         // Aquí iría la lógica para recargar la lista de categorías
         alert('Cajero creado');
     };
+     const handleTaxForm = () => {
+        setShowTaxForm(false);
+        // Aquí iría la lógica para recargar la lista de categorías
+        alert('tax');
+    };
+
 
 
     return (
@@ -173,6 +179,14 @@ const InventoryManagement: React.FC = () => {
                     <CashierEditForm // <-- ¡COMPONENTE CORRECTO!
                         onSuccess={handleCashierEditSuccess}
                         onCancel={() => setShowCashierEditForm(false)}
+                    />
+                </Card>
+            )}{/* --- 3. FORMULARIO DEDICADO A EDICIÓN --- */}
+            {showTaxForm && (
+                <Card title="3. Formulario Edición Productos" style={{ width: 450 }}>
+                    <TaxForm // <-- ¡COMPONENTE CORRECTO!
+                        onSuccess={handleTaxForm}
+                        onCancel={() => setShowTaxForm(false)}
                     />
                 </Card>
             )}

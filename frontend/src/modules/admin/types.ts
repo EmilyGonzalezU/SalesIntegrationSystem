@@ -35,3 +35,14 @@ export interface AdminLogin {
   username: string;
   password: string;
 }
+
+export interface TaxRateRead {
+    id: number;
+    name: string;
+    rate: number; // Decimal (ej: 0.19)
+    last_updated: string;
+}
+
+export interface TaxRateUpdate {
+    rate: number; // Decimal (ej: 0.19)
+}

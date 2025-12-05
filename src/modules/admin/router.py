@@ -33,17 +33,30 @@ def read_cashiers_route(db: Session = Depends(get_db)):
     """[ADMIN] Obtiene la lista completa de cajeros."""
     return db.query(models.Cashier).all()
 
-# ------------------------------------------------------------------------
-# GESTIÓN DE TASA DE IVA (MODIFICACIÓN)
-# ------------------------------------------------------------------------
+# ✨ NUEVA RUTA GET (Soluciona el error 405)
+@router.get("/tax_rate/iva", response_model=schemas.TaxRateRead)
+def get_iva_rate_route(db: Session = Depends(get_db)):
+    """[ADMIN] Obtiene la configuración actual del IVA."""
+    iva_rate = db.query(models.TaxRate).filter(models.TaxRate.name == "IVA_ESTANDAR").first()
+    
+    if not iva_rate:
+        # Si es la primera vez, se inicializa en 19% (0.19)
+        iva_rate = models.TaxRate(name="IVA_ESTANDAR", rate=0.19)
+        db.add(iva_rate)
+        db.commit()
+        db.refresh(iva_rate)
+        
+    return iva_rate
 
 @router.put("/tax_rate/iva", response_model=schemas.TaxRateRead)
 def update_iva_rate_route(new_rate: schemas.TaxRateUpdate, db: Session = Depends(get_db)):
-    """[ADMIN] Permite al administrador actualizar la tasa de IVA."""
+    """[ADMIN] Actualiza la tasa de IVA."""
     iva_rate = db.query(models.TaxRate).filter(models.TaxRate.name == "IVA_ESTANDAR").first()
 
     if not iva_rate:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Configuración de IVA no encontrada.")
+        # Fallback de seguridad si se intenta editar algo que no existe
+        iva_rate = models.TaxRate(name="IVA_ESTANDAR", rate=0.19)
+        db.add(iva_rate)
     
     iva_rate.rate = new_rate.rate
     db.commit()
